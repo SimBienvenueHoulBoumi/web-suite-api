@@ -1,0 +1,62 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  email     String      @unique
+  password  String
+  profile   Profile?
+  Watchlist Watchlist[]
+}
+
+model Profile {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int    @unique
+}
+
+model Watchlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  contentId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ContentType {
+  ANIME
+  MANGA
+  WEBTOON
+}
+
+model Content {
+  id            Int         @id @default(autoincrement())
+  title         String
+  type          ContentType // Enum: Anime, Manga, Webtoon
+  status        WatchStatus // Enum: Watching, Completed, Plan to Watch
+  episodes      Int? // Nombre total d'épisodes (pour les animés)
+  chapters      Int? // Nombre total de chapitres (pour les mangas/webtoons)
+  currentEp     Int? // Dernier épisode vu
+  currentChap   Int? // Dernier chapitre lu
+  userWatchlist Watchlist[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+enum WatchStatus {
+  WATCHING
+  COMPLETED
+  PLAN_TO_WATCH
+}
