@@ -35,8 +35,8 @@ export class ProfilesController {
 
   @Get(':userId')
   @ApiOperation({ summary: 'Get a profile by userId' })
-  async findOne(@Param('userId') id: string): Promise<string> {
-    return this.profilesService.getProfileByUserId(Number(id));
+  async findOne(@Param('userId') id: string): Promise<Profile | null> {
+    return await this.profilesService.getProfileByUserId(Number(id));
   }
 
   @Put(':id')

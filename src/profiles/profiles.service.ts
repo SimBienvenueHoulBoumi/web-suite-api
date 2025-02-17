@@ -7,20 +7,19 @@ export class ProfilesService {
   constructor(private prisma: PrismaService) {}
 
   async createProfile(userId: number, name: string): Promise<string> {
-    this.prisma.profile.create({
+    const profile = await this.prisma.profile.create({
       data: {
-        name,
-        user: { connect: { id: userId } },
+        name: name,
+        userId: userId,
       },
+      include: { user: true },
     });
 
-    return 'The profile has been successfully created.';
+    return 'Profile created successfully';
   }
 
   async getAllProfiles(): Promise<Profile[]> {
-    return this.prisma.profile.findMany({
-      include: { user: true },
-    });
+    return this.prisma.profile.findMany();
   }
 
   async updateProfile(id: number, name: string): Promise<Profile> {
@@ -36,11 +35,9 @@ export class ProfilesService {
     });
   }
 
-  async getProfileByUserId(userId: number): Promise<string> {
-    this.prisma.profile.findUnique({
+  async getProfileByUserId(userId: number): Promise<Profile | null> {
+    return this.prisma.profile.findUnique({
       where: { userId },
-      include: { user: true },
     });
-    return "Successfully fetched the profile."
   }
 }
