@@ -10,12 +10,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ContentType {
+  ANIME
+  MANGA
+  WEBTOON
+}
+
+enum WatchStatus {
+  WATCHING
+  COMPLETED
+  PLAN_TO_WATCH
+}
+
 model User {
   id        Int         @id @default(autoincrement())
   email     String      @unique
   password  String
   profile   Profile?
-  Watchlist Watchlist[]
+  watchlist Watchlist[]
 }
 
 model Profile {
@@ -25,38 +37,28 @@ model Profile {
   userId Int    @unique
 }
 
+model Content {
+  id         Int         @id @default(autoincrement())
+  title      String      @unique
+  type       ContentType
+  episodes   Int?
+  chapters   Int?
+  watchlists Watchlist[]
+}
+
 model Watchlist {
-  id        Int      @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   userId    Int
   contentId Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  status      WatchStatus
+  currentEp   Int?
+  currentChap Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
 
-enum ContentType {
-  ANIME
-  MANGA
-  WEBTOON
-}
-
-model Content {
-  id            Int         @id @default(autoincrement())
-  title         String
-  type          ContentType // Enum: Anime, Manga, Webtoon
-  status        WatchStatus // Enum: Watching, Completed, Plan to Watch
-  episodes      Int? // Nombre total d'épisodes (pour les animés)
-  chapters      Int? // Nombre total de chapitres (pour les mangas/webtoons)
-  currentEp     Int? // Dernier épisode vu
-  currentChap   Int? // Dernier chapitre lu
-  userWatchlist Watchlist[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-}
-
-enum WatchStatus {
-  WATCHING
-  COMPLETED
-  PLAN_TO_WATCH
+  @@unique([userId, contentId]) // Un utilisateur ne peut suivre un même contenu qu'une seule fois
 }

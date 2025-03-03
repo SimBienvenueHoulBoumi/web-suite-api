@@ -1,9 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ContentType } from './types';
 
 export class CreateWatchlistDto {
-  @ApiProperty({ example: 1, description: 'User ID' })
-  userId: number;
+  @ApiProperty({ example: 'one title', description: 'one peace' })
+  title: string;
 
-  @ApiProperty({ example: 3, description: 'Content ID' })
-  contentId: number;
+  @ApiProperty({ example: 'MANGA', description: 'type of content' })
+  type: ContentType;
+
+  @ApiProperty({ example: 3, description: 'currentEp number' })
+  currentEp: number;
+
+  @ApiProperty({ example: 3, description: 'currentChap number' })
+  currentChap: number;
 }

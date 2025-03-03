@@ -29,6 +29,9 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 
+# After update prisma schema
+$ npx prisma migrate dev --name [name] 
+
 # user@mail.com
 # user123
 ```

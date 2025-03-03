@@ -10,12 +10,6 @@ export class UpdateProfileDto {
 
 export class CreateProfileDto {
   @ApiProperty({
-    description: 'Id of user',
-    example: '123',
-  })
-  userId: number;
-
-  @ApiProperty({
     description: 'Name of the profile',
     example: 'John Doe',
   })
