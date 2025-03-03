@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Exposer le port utilisé par l'API
-EXPOSE 4000
+EXPOSE 5200
 
 # Démarrer l'API avec nodemon pour le hot reload
 CMD ["npm", "run", "start:dev"]
