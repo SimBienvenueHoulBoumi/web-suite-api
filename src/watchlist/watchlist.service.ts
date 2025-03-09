@@ -9,6 +9,7 @@ import { ContentType } from 'src/utils/types';
 import { WatchStatus } from '@prisma/client';
 import { CreateWatchlistDto } from 'src/utils/Watchlist.dto';
 import { ErrorHandler } from 'src/common/error-handler';
+import { UpdateContentDto } from 'src/utils/Content.dto';
 
 @Injectable()
 export class WatchlistService {
@@ -33,6 +34,7 @@ export class WatchlistService {
     try {
       const watchlist = await this.prisma.watchlist.findUnique({
         where: { id },
+        include: { content: true, user: true },
       });
 
       if (!watchlist) {
@@ -65,6 +67,7 @@ export class WatchlistService {
           where: { userId },
           skip,
           take: limit,
+          include: { content: true, user: true },
         }),
         this.prisma.watchlist.count({ where: { userId } }),
       ]);
@@ -97,9 +100,9 @@ export class WatchlistService {
         content = await this.prisma.content.create({
           data: {
             title: data.title,
-            chapters: data.currentChap,
             type: this.getContentKey(data.type),
             episodes: data.currentEp,
+            chapters: data.currentChap,
           },
         });
       }
@@ -108,8 +111,11 @@ export class WatchlistService {
         data: {
           userId,
           contentId: content.id,
+          currentChap: content.chapters,
+          currentEp: content.episodes,
           status: this.getStatusKey('watching'),
         },
+        include: { content: true },
       });
     } catch (error) {
       ErrorHandler.handlePrismaError(error);
@@ -144,18 +150,15 @@ export class WatchlistService {
     }
   }
 
-  async deleteWatchListEntry(
-    userId: number,
-    contentId: number,
-  ): Promise<string> {
+  async deleteWatchListEntry(userId: number, id: number): Promise<string> {
     try {
       const watchlistEntry = await this.prisma.watchlist.findFirst({
-        where: { userId, contentId },
+        where: { userId, id },
       });
 
       if (!watchlistEntry) {
         throw new NotFoundException(
-          `Watchlist entry not found for user ${userId} and content ${contentId}.`,
+          `Watchlist entry not found for user ${userId} and id ${id}.`,
         );
       }
 
@@ -164,6 +167,75 @@ export class WatchlistService {
       });
 
       return 'The watchlist entry has been successfully deleted.';
+    } catch (error) {
+      ErrorHandler.handlePrismaError(error);
+    }
+  }
+
+  async updateWatchList(
+    id: number,
+    data: UpdateContentDto,
+  ): Promise<Watchlist> {
+    try {
+      if (
+        !data.title &&
+        !data.type &&
+        !data.currentChap &&
+        !data.currentEp &&
+        !data.status
+      ) {
+        throw new BadRequestException(
+          'At least one field (title, type, currentChap, currentEp, status) is required to update.',
+        );
+      }
+
+      const watchlistEntry = await this.prisma.watchlist.findUnique({
+        where: { id },
+        include: { content: true },
+      });
+
+      if (!watchlistEntry) {
+        throw new NotFoundException(`Watchlist entry not found for id ${id}.`);
+      }
+
+      let content = watchlistEntry.content;
+
+      if (data.title || data.type) {
+        if (!content) {
+          content = await this.prisma.content.create({
+            data: {
+              title: data.title || '',
+              chapters: data.currentChap ?? 0,
+              type: data.type ? this.getContentKey(data.type) : 'ANIME',
+              episodes: data.currentEp ?? 0,
+            },
+          });
+        } else {
+          content = await this.prisma.content.update({
+            where: { id: content.id },
+            data: {
+              title: data.title ?? content.title,
+              chapters: data.currentChap ?? content.chapters,
+              type: data.type ? this.getContentKey(data.type) : content.type,
+              episodes: data.currentEp ?? content.episodes,
+            },
+          });
+        }
+      }
+
+      const updatedWatchlist = await this.prisma.watchlist.update({
+        where: { id },
+        data: {
+          contentId: content.id,
+          status: data.status
+            ? this.getStatusKey(data.status)
+            : watchlistEntry.status,
+          currentEp: data.currentEp ?? watchlistEntry.currentEp,
+          currentChap: data.currentChap ?? watchlistEntry.currentChap,
+        },
+      });
+
+      return updatedWatchlist;
     } catch (error) {
       ErrorHandler.handlePrismaError(error);
     }

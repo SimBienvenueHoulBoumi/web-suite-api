@@ -14,3 +14,17 @@ export class CreateWatchlistDto {
   @ApiProperty({ example: 3, description: 'currentChap number' })
   currentChap: number;
 }
+
+export class UpdateWatchlistDto {
+  @ApiProperty({ example: 'one title', description: 'one peace', required: false })
+  title?: string;
+
+  @ApiProperty({ example: 'MANGA', description: 'type of content', required: false })
+  type?: ContentType;
+
+  @ApiProperty({ example: 3, description: 'currentEp number', required: false })
+  currentEp?: number;
+
+  @ApiProperty({ example: 3, description: 'currentChap number', required: false })
+  currentChap?: number;
+}
