@@ -9,8 +9,8 @@ RUN npm install
 # Copier le reste des fichiers de l'application
 COPY . .
 
-# Exposer le port 5200
-EXPOSE 5200
+# Exposer le port 5100
+EXPOSE 5100
 
 # Commande de démarrage
 CMD ["npm", "run", "start:dev"]

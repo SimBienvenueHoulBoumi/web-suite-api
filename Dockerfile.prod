@@ -14,7 +14,7 @@ RUN npm install --only=production
 COPY . .
 
 # Exposer le port utilisé par l'API
-EXPOSE 5300
+EXPOSE 5100
 
 # Démarrer l'API en mode production
 CMD ["npm", "run", "start:prod"]
